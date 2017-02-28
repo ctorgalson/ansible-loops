@@ -26,11 +26,6 @@
         common_directories: "{{ common_directories }}"
 
   tasks:
-    - name: "Setup: create 'loopers' group."
-      group:
-        name: "loopers"
-        state: present
-
     - name: "Loop 1: create users using 'with_items'."
       user:
         name: "{{ item.name }}"
@@ -87,6 +82,6 @@
       with_items: "{{ home_directories.stdout_lines }}"
       changed_when: false
 
-    - name: "Check results."
+    - name: "Verify playbook results."
       debug:
         msg: "{{ directory_contents.results|map(attribute='stdout_lines')|list }}"
