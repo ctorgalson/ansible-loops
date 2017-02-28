@@ -1,7 +1,7 @@
 # Ansible Loops
 
 This repository uses a simple Vagrantfile and a basic playbook to
-illustrate some of the types of loops available inside Ansible.
+illustrate the use of some of the types of loops available inside Ansible.
 
 ## Getting started
 
