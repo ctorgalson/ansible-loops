@@ -156,5 +156,5 @@ output easier to read.
 
 - name: "Verify playbook results."
   debug:
-    msg: "{{ directory_contents.results|map(attribute='stdout_lines')|list }}"
+    msg: "{{ directory_contents.results | map(attribute='stdout_lines') | list }}"
 ```
