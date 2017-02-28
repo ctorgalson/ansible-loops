@@ -144,3 +144,17 @@ form:
 The final loop shows another example of how to iterate over a registered
 variable, as well as another way of using jinja2 filters to make debug
 output easier to read.
+
+```yaml
+- name: "Loop 6: list user directory contents."
+  args:
+    chdir: "/home/{{ item }}"
+  shell: "pwd && find -type d | sort"
+  register: directory_contents
+  with_items: "{{ home_directories.stdout_lines }}"
+  changed_when: false
+
+- name: "Verify playbook results."
+  debug:
+    msg: "{{ directory_contents.results|map(attribute='stdout_lines')|list }}"
+```
