@@ -1,0 +1,92 @@
+---
+- hosts: all
+  become: true
+
+  vars:
+    common_directories:
+      - ".ssh"
+      - "loops"
+
+    users_with_items:
+      - name: "alice"
+        personal_directories:
+          - "bob"
+          - "carol"
+          - "dan"
+      - name: "bob"
+        personal_directories:
+          - "alice"
+          - "carol"
+          - "dan"
+
+    users_with_dict:
+      carol:
+        common_directories: "{{ common_directories }}"
+      dan:
+        common_directories: "{{ common_directories }}"
+
+  tasks:
+    - name: "Setup: create 'loopers' group."
+      group:
+        name: "loopers"
+        state: present
+
+    - name: "Loop 1: create users using 'with_items'."
+      user:
+        name: "{{ item.name }}"
+      with_items: "{{ users_with_items }}"
+
+    - name: "Loop 2: create common users' directories using 'with_nested'."
+      file:
+        dest: "/home/{{ item.0.name }}/{{ item.1 }}"
+        owner: "{{ item.0.name }}"
+        group: "{{ item.0.name }}"
+        state: directory
+      with_nested:
+        - "{{ users_with_items }}"
+        - "{{ common_directories }}"
+
+    - name: "Loop 3: create personal users' directories using 'with_subelements'."
+      file:
+        dest: "/home/{{ item.0.name }}/{{ item.1 }}"
+        owner: "{{ item.0.name }}"
+        group: "{{ item.0.name }}"
+        state: directory
+      with_subelements:
+        - "{{ users_with_items }}"
+        - personal_directories
+
+    - name: "Loop 4: create users using 'with_dict'."
+      user:
+        name: "{{ item.key }}"
+      with_dict: "{{ users_with_dict }}"
+
+    - name: "Get list of extant users."
+      args:
+        chdir: "/home"
+      shell: "find * -type d -prune -not -path vagrant | sort"
+      register: "home_directories"
+      changed_when: false
+
+    - name: "Loop 5: create personal user directories if they don't exist."
+      file:
+        dest: "/home/{{ item.0 }}/{{ item.1 }}"
+        owner: "{{ item.0 }}"
+        group: "{{ item.0 }}"
+        state: directory
+      with_nested:
+        - "{{ home_directories.stdout_lines }}"
+        - "{{ home_directories.stdout_lines | union(common_directories) }}"
+      when: "'{{ item.0 }}' != '{{ item.1 }}'"
+
+    - name: "List user directory contents."
+      args:
+        chdir: "/home/{{ item }}"
+      shell: "pwd && find -type d | sort"
+      register: directory_contents
+      with_items: "{{ home_directories.stdout_lines }}"
+      changed_when: false
+
+    - name: "Check results."
+      debug:
+        msg: "{{ directory_contents.results|map(attribute='stdout_lines')|list }}"
