@@ -8,6 +8,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provision "ansible_local" do |ansible|
     ansible.playbook = "ansible-loops.yml"
     ansible.sudo = true
+
+    # Uncomment to make Ansible use verbose output.
+    # ansible.raw_arguments = [
+    #   "-vvv"
+    # ]
   end
 
 end
