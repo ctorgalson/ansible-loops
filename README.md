@@ -15,6 +15,7 @@ illustrate the use of some of the types of loops available inside Ansible.
 1. `git clone git@github.com:ctorgalson/ansible-loops.git`
 2. `cd ansible-loops`
 3. `vagrant up`
+4. (After changing something in the playbook) `vagrant provision`
 
 ## The example tasks
 
